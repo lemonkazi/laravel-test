@@ -1,0 +1,117 @@
+# Author: Mamun
+# All rights reserved. Copyright (c) 
+version: "3.7"
+services:
+
+  #PHP Service
+  app:
+    image: laravel/php
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    labels:
+      project: "laravel-app"
+      environment: local
+      company: " Inc"
+    build:
+      args:
+        user: user
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    working_dir: /var/www/html/
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+      COMPOSER_MEMORY_LIMIT: -1
+      DB_HOST: db
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+      DB_DATABASE: laravel_test
+      DB_PORT: 3306
+    depends_on:
+      - db
+    volumes:
+      - ./:/var/www/html/
+    networks:
+      - app-network
+    
+
+
+  #MySQL Service
+  db:
+    image: mysql:5.7.22
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    labels:
+      project: "laravel-app"
+      environment: local
+      company: " Inc"
+    environment:
+      MYSQL_DATABASE: laravel_test
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_PASSWORD: secret
+      MYSQL_USER: user
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - 33066:3306
+    networks:
+      - app-network
+    command: --character-set-server=utf8 --collation-server=utf8_unicode_ci
+
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - 5010:80
+    labels:
+      project: "laravel-app"
+      environment: local
+      company: " Inc"
+    environment:
+      UPLOAD_LIMIT: 102400
+      HIDE_PHP_VERSION: 1
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - app-network
+
+  #Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    tty: true
+    labels:
+      project: "laravel-app"
+      environment: local
+      company: " Inc"
+    ports:
+      - 5000:80
+    depends_on:
+      - db
+      - app
+    volumes:
+      - ./:/var/www/html/
+      - ./docker-compose/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
