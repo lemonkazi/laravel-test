@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Listing;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\ListingRequest;
 
 class ListingController extends Controller
 {
@@ -28,16 +29,8 @@ class ListingController extends Controller
     }
 
     // Store Listing Data
-    public function store(Request $request) {
-        $formFields = $request->validate([
-            'title' => 'required',
-            'company' => ['required', Rule::unique('listings', 'company')],
-            'location' => 'required',
-            'website' => 'required',
-            'email' => ['required', 'email'],
-            'tags' => 'required',
-            'description' => 'required'
-        ]);
+    public function store(ListingRequest $request) {
+        $formFields = $request->all();
 
         if($request->hasFile('logo')) {
             $formFields['logo'] = $request->file('logo')->store('logos', 'public');
