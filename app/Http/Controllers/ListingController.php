@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Listing;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\ListingRequest;
+use App\Http\Requests\ListingUpdateRequest;
 
 class ListingController extends Controller
 {
@@ -49,21 +48,13 @@ class ListingController extends Controller
     }
 
     // Update Listing Data
-    public function update(Request $request, Listing $listing) {
+    public function update(ListingUpdateRequest $request, Listing $listing) {
         // Make sure logged in user is owner
         if($listing->user_id != auth()->id()) {
             abort(403, 'Unauthorized Action');
         }
 
-        $formFields = $request->validate([
-            'title' => 'required',
-            'company' => ['required'],
-            'location' => 'required',
-            'website' => 'required',
-            'email' => ['required', 'email'],
-            'tags' => 'required',
-            'description' => 'required'
-        ]);
+        $formFields = $request->all();
 
         if($request->hasFile('logo')) {
             $formFields['logo'] = $request->file('logo')->store('logos', 'public');
