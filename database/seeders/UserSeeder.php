@@ -27,6 +27,7 @@ class UserSeeder extends Seeder
             'name' => 'John Doe',
             'email' => 'john@gmail.com'
         ]);
+        $this->truncate('listings');
         \App\Models\Listing::factory(6)->create([
             'user_id' => $user->id
         ]);

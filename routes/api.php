@@ -14,6 +14,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+// Route::prefix('v1')
+//     ->middleware([
+//         'auth:sanctum'
+//     ])
+//     ->group(function (){
+//         \App\Helpers\Routes\RouteHelper::includeRouteFiles(__DIR__ . '/api/v1');
+
+// //        require __DIR__ . '/api/users.php';
+// //        require __DIR__ . '/api/posts.php';
+// //        require __DIR__ . '/api/comments.php';
+
+//     });
+
+Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
