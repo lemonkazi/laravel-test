@@ -5,9 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Http\Resources\UserResource;
 
 class UserController extends Controller
 {
+
+    /**
+     * Display a listing of users.
+     *
+     * Gets a list of users.
+     *
+     * @queryParam page_size int Size per page. Defaults to 20. Example: 20
+     * @queryParam page int Page to view. Example: 1
+     *
+     * @apiResourceCollection App\Http\Resources\UserResource
+     * @apiResourceModel App\Models\User
+     * @return ResourceCollection
+     */
+    public function index(Request $request)
+    {
+        $users = User::query()->paginate($request->page_size ?? 20);
+
+        return UserResource::collection($users);
+    }
+
+    /**
+     * Display the specified user.
+     *
+     * @urlParam id int required User ID
+     * @apiResource App\Http\Resources\UserResource
+     * @apiResourceModel App\Models\User
+     *
+     * @param \App\Models\User $user
+     * @return UserResource
+     */
+    public function show(User $user)
+    {
+        return new UserResource($user);
+    }
+
     // Show Register/Create Form
     public function create() {
         return view('users.register');
