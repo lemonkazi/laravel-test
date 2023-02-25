@@ -46,8 +46,8 @@ RUN docker-php-ext-install intl
 # RUN docker-php-ext-configure calendar
 # RUN docker-php-ext-install calendar
 # install php redis extension
-RUN pecl install redis
-RUN docker-php-ext-enable redis
+#RUN pecl install redis
+#RUN docker-php-ext-enable redis
 
 # Set working directory
 WORKDIR /var/www/html

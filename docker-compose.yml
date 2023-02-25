@@ -40,7 +40,7 @@ services:
 
   #MySQL Service
   db:
-    image: mysql:5.7.22
+    image: mysql:5.7
     container_name: db
     restart: unless-stopped
     tty: true
