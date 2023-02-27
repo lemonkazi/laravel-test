@@ -32,7 +32,7 @@ Route::middleware([
             ->name('index')
             ->withoutMiddleware('auth');
 
-        Route::get('/users/{user}', 'UserController:@show')
+        Route::get('/users/{user}', 'UserController@show')
             ->name('show')
             ->whereNumber('user');
 
