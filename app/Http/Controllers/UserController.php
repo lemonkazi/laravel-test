@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Resources\UserResource;
+use App\Repositories\UserRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class UserController extends Controller
 {
@@ -50,23 +53,36 @@ class UserController extends Controller
     }
 
     // Create New User
-    public function store(Request $request) {
-        $formFields = $request->validate([
-            'name' => ['required', 'min:3'],
-            'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'password' => 'required|confirmed|min:6'
-        ]);
+    public function store(Request $request, UserRepository $repository) {
 
-        // Hash Password
-        $formFields['password'] = bcrypt($formFields['password']);
+        if ($request->is('api/*')) {
+            // if the request is an API request
+            $created = $repository->create($request->only([
+                'name',
+                'email',
+            ]));
 
-        // Create User
-        $user = User::create($formFields);
+            return new UserResource($created);
+        } else {
+            $formFields = $request->validate([
+                'name' => ['required', 'min:3'],
+                'email' => ['required', 'email', Rule::unique('users', 'email')],
+                'password' => 'required|confirmed|min:6'
+            ]);
 
-        // Login
-        auth()->login($user);
+            // Hash Password
+            $formFields['password'] = bcrypt($formFields['password']);
 
-        return redirect('/')->with('message', 'User created and logged in');
+            // Create User
+            $user = User::create($formFields);
+
+            // Login
+            auth()->login($user);
+            // if the request is a web request
+            return redirect('/')->with('message', 'User created and logged in');
+        }
+
+
     }
 
     // Logout User
@@ -99,6 +115,43 @@ class UserController extends Controller
         }
 
         return back()->withErrors(['email' => 'Invalid Credentials'])->onlyInput('email');
+    }
+
+
+    /**
+     * Update the specified user in storage.
+     * @bodyParam name string Name of the user. Example: John Doe
+     * @bodyParam email string Email of the user. Example: doe@doe.com
+     * @apiResource App\Http\Resources\UserResource
+     * @apiResourceModel App\Models\User
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\User $user
+     * @return UserResource | JsonResponse
+     */
+    public function update(Request $request, User $user, UserRepository $repository)
+    {
+        $user = $repository->update($user, $request->only([
+            'name',
+            'email',
+        ]));
+
+        return new UserResource($user);
+    }
+
+    /**
+     * Remove the specified user from storage.
+     * @response 200 {
+        "data": "success"
+     * }
+     * @param \App\Models\User $user
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(User $user, UserRepository $repository)
+    {
+        $deleted = $repository->forceDelete($user);
+        return new \Illuminate\Http\JsonResponse([
+            'data' => 'success',
+        ]);
     }
 }
 
